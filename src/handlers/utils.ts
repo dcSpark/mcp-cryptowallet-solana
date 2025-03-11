@@ -1,22 +1,15 @@
-// Import types from local files until we install @solana/kit
+// Import from @solana/kit instead of using mocks
+import { address, Address } from "@solana/kit";
 import { ToolResultSchema } from "../types.js";
-
-// Mock address function until we install @solana/kit
-const address = (addressString: string): string => {
-  // Simple validation for Solana addresses (base58 encoded, 32-44 characters)
-  if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addressString)) {
-    throw new Error(`Invalid address: ${addressString}`);
-  }
-  return addressString;
-};
 
 /**
  * Utility function to handle address creation and error handling
  * @param addressString The address string to convert to an address
  * @returns An object containing either the address or an error message
  */
-export const createAddress = (addressString: string): { addr?: string; error?: string } => {
+export const createAddress = (addressString: string): { addr?: Address<string>; error?: string } => {
   try {
+    // Use Address from @solana/kit instead of the mock function
     const addr = address(addressString);
     return { addr };
   } catch (error) {
@@ -59,7 +52,7 @@ export const createSuccessResponse = <T>(message: string): ToolResultSchema<T> =
  * @param addressString The address string to validate
  * @returns Either an address or a ToolResultSchema with an error message
  */
-export const validateAddress = <T>(addressString: string): string | ToolResultSchema<T> => {
+export const validateAddress = <T>(addressString: string): Address<string> | ToolResultSchema<T> => {
   const { addr, error } = createAddress(addressString);
   if (error) {
     return createErrorResponse<T>(error);

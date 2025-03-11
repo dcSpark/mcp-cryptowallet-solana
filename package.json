@@ -1,9 +1,9 @@
 {
-  "name": "@dcspark/mcp-cryptowallet-solana",
+  "name": "@mcp-dockmaster/mcp-cryptowallet-solana",
   "version": "0.1.0",
   "description": "A Model Context Protocol server for Solana crypto wallet using @solana/kit",
   "license": "MIT",
-  "author": "DC Spark <hello@dcspark.io>",
+  "author": "dcSpark <hello@dcspark.io>",
   "bugs": "https://github.com/dcspark/mcp-cryptowallet-solana/issues",
   "homepage": "https://github.com/dcspark/mcp-cryptowallet-solana",
   "repository": {
@@ -26,11 +26,13 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
-    "@solana/kit": "^2.1.0"
+    "@solana/kit": "^2.1.0",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "^1.98.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
-    "typescript": "^5.8.2",
-    "tsx": "^4.7.0"
+    "tsx": "^4.7.0",
+    "typescript": "^5.8.2"
   }
 }

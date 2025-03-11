@@ -2,12 +2,13 @@ import {
   getBalanceHandler, 
   getTokenAccountsHandler, 
   getTokenBalanceHandler, 
-  createTransactionHandler, 
-  signTransactionHandler, 
+  createTransactionMessageHandler,
+  signTransactionMessageHandler,
   sendTransactionHandler, 
   generateKeyPairHandler, 
   importPrivateKeyHandler, 
-  validateAddressHandler 
+  validateAddressHandler,
+  checkTransactionHandler
 } from "./handlers/wallet.js";
 
 export const tools = [
@@ -115,6 +116,19 @@ export const tools = [
       },
       required: ["address"]
     }
+  },
+  {
+    name: "wallet_check_transaction",
+    description: "Check the status of a transaction",
+    inputSchema: {
+      type: "object",
+      properties: {
+        signature: { type: "string" },
+        rpcUrl: { type: "string" },
+        commitment: { type: "string", enum: ["confirmed", "finalized"] }
+      },
+      required: ["signature"]
+    }
   }
 ];
 
@@ -122,10 +136,11 @@ export const handlers: Record<string, (input: any) => Promise<any>> = {
   wallet_get_balance: getBalanceHandler,
   wallet_get_token_accounts: getTokenAccountsHandler,
   wallet_get_token_balance: getTokenBalanceHandler,
-  wallet_create_transaction: createTransactionHandler,
-  wallet_sign_transaction: signTransactionHandler,
+  wallet_create_transaction: createTransactionMessageHandler,
+  wallet_sign_transaction: signTransactionMessageHandler,
   wallet_send_transaction: sendTransactionHandler,
   wallet_generate_keypair: generateKeyPairHandler,
   wallet_import_private_key: importPrivateKeyHandler,
-  wallet_validate_address: validateAddressHandler
+  wallet_validate_address: validateAddressHandler,
+  wallet_check_transaction: checkTransactionHandler
 };

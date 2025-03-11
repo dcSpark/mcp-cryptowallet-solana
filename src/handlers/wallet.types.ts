@@ -20,7 +20,9 @@ export interface CreateTransactionInput {
   fromPublicKey: string;
   toPublicKey: string;
   amount: number;
+  privateKey: string;
   commitment?: Commitment;
+  skipPreflight?: boolean;
 }
 
 export interface SignTransactionInput {
@@ -30,6 +32,7 @@ export interface SignTransactionInput {
 
 export interface SendTransactionInput {
   signedTransaction: string;
+  rpcUrl?: string;
   skipPreflight?: boolean;
   commitment?: Commitment;
 }
@@ -44,4 +47,10 @@ export interface ImportPrivateKeyInput {
 
 export interface ValidateAddressInput {
   address: string;
+}
+
+export interface CheckTransactionInput {
+  signature: string;
+  rpcUrl?: string;
+  commitment?: "confirmed" | "finalized";
 }
