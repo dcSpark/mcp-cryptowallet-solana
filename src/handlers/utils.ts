@@ -1,8 +1,9 @@
 // Import from @solana/kit instead of using mocks
 import { address, Address } from "@solana/kit";
+import { createKeyPairSignerFromPrivateKeyBytes } from "@solana/kit";
 import { ToolResultSchema } from "../types.js";
 import { Keypair } from "@solana/web3.js";
-
+import bs58 from "bs58";
 /**
  * Utility function to handle address creation and error handling
  * @param addressString The address string to convert to an address
@@ -63,10 +64,38 @@ export const validateAddress = <T>(addressString: string): Address<string> | Too
 
 /**
  * Utility function to create a keypair from a private key string
- * @param privateKeyString The private key as a base64 string
+ * @param privateKeyString The private key as a base58 string
  * @returns A Keypair instance
  */
-export const createKeyPairFromPrivateKey = (privateKeyString: string): Keypair => {
-  const privateKeyBytes = Buffer.from(privateKeyString, 'base64');
-  return Keypair.fromSecretKey(privateKeyBytes);
+export const createKeyPairFromPrivateKey = async (privateKeyString: string): Promise<Keypair> => {
+  // Decode the base58 private key to bytes
+  const privateKeyBytes = bs58.decode(privateKeyString);
+  
+  if (privateKeyBytes.length === 64) {
+    try { 
+      return Keypair.fromSecretKey(privateKeyBytes);
+    } catch (error) {
+      throw new Error(`Invalid private key. Private key must be 32 or 64 bytes long.
+        Private key length: ${privateKeyBytes.length}
+      `);
+    }
+  }
+  if (privateKeyBytes.length === 32) {
+    const signer = await createKeyPairSignerFromPrivateKeyBytes(privateKeyBytes);
+    // Convert the base58 public key to bytes
+    const publicKey = bs58.decode(signer.address);
+    const fullKeyBytes = Buffer.concat([Buffer.from(privateKeyBytes), Buffer.from(publicKey)]);
+    try {
+      return Keypair.fromSecretKey(fullKeyBytes);
+    } catch (error) {
+      throw new Error(`Invalid private key. Private key must be 32 or 64 bytes long.
+        Private key length: ${privateKeyBytes.length}
+        Public key: ${signer.address}
+        Public key length: ${publicKey.length}
+        Full key length: ${fullKeyBytes.length}
+        Error: ${error instanceof Error ? error.message : String(error)}
+        `);
+    }
+  }
+  throw new Error('Invalid private key. Private key must be 32 or 64 bytes long.');
 };

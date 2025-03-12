@@ -19,9 +19,11 @@ import {
   createKeyPairSignerFromPrivateKeyBytes,
   createSolanaRpc,
   createSolanaRpcSubscriptions,
+  KeyPairSigner,
 } from "@solana/kit";
 
 import { Connection, Keypair, Message, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import bs58 from "bs58";
 
 // Create configurable connections to Solana clusters
 let currentNetwork: 'devnet' | 'mainnet' = 'devnet';
@@ -49,14 +51,17 @@ export const getCurrentNetwork = (): string => {
 const TOKEN_PROGRAM_ID = address("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 
 // Setup default keypair from environment variable if available
-let defaultKeypair: Keypair | null = null;
 let defaultPublicKey: string | null = null;
+let defaultPrivateKey: string | null = null;
+const setDefaultKeyPair = async (privateKey: string) => {
+  defaultPrivateKey = privateKey;
+  defaultPublicKey = (await createKeyPairSignerFromPrivateKeyBytes(bs58.decode(privateKey))).address;
+}
 
 // Initialize default keypair if PRIVATE_KEY environment variable is set
 if (process.env.PRIVATE_KEY) {
   try {
-    defaultKeypair = createKeyPairFromPrivateKey(process.env.PRIVATE_KEY);
-    defaultPublicKey = defaultKeypair.publicKey.toString();
+    await setDefaultKeyPair(process.env.PRIVATE_KEY);
   } catch (error) {
     console.error(`Error initializing default wallet: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -123,6 +128,9 @@ export const getTokenBalanceHandler = async (input: GetTokenBalanceInput): Promi
 
 export const createTransactionMessageHandler = async (input: CreateTransactionInput): Promise<ToolResultSchema<any>> => {
   try {
+    if (!BigInt(input.amount)) {
+      return createErrorResponse('Invalid amount. Amount must be an integer number representing the amount of lamports to transfer.');
+    }
     // Validate the from public key is a valid format
     const fromPublicKey = input.fromPublicKey || defaultPublicKey;
     if (!fromPublicKey) return nullPublicKeyError;
@@ -138,15 +146,20 @@ export const createTransactionMessageHandler = async (input: CreateTransactionIn
       return createErrorResponse('Invalid amount. Amount must be greater than zero.');
     }
 
+    // Get a recent blockhash
+    const { value: { blockhash } } = await rpc.getLatestBlockhash().send();
+
     const transaction = new Transaction();
     transaction.add(SystemProgram.transfer({
       fromPubkey: new PublicKey(fromPublicKeyAddr),
       toPubkey: new PublicKey(toPublicKeyAddr),
-      lamports: input.amount, // Amount in lamports (0.001 SOL)
+      lamports: input.amount,
     }));
     transaction.feePayer = new PublicKey(fromPublicKeyAddr);
+    transaction.recentBlockhash = blockhash;
+    
     const message = transaction.compileMessage();
-    const serializedMessage = message.serialize().toString('base64');
+    const serializedMessage = bs58.encode(message.serialize());
     return createSuccessResponse(`Transaction Message created: ${serializedMessage}`);
   } catch (error) {
     return createErrorResponse(`Error creating transaction: ${error instanceof Error ? error.message : String(error)}`);
@@ -155,23 +168,23 @@ export const createTransactionMessageHandler = async (input: CreateTransactionIn
 
 export const signTransactionMessageHandler = async (input: SignTransactionInput): Promise<ToolResultSchema<any>> => {
   try {
-    // Deserialize the message, not a full transaction
-    const messageBuffer = Buffer.from(input.transaction, 'base64');
+    // Deserialize the message using base58 instead of base64
+    const messageBuffer = Buffer.from(bs58.decode(input.transaction));
     const message = Message.from(messageBuffer);
     
     // Create a new transaction with this message
     const transaction = Transaction.populate(message);
     
     // Import the private key (assuming it's already in the correct format)
-    const privateKey = input.privateKey || defaultKeypair?.secretKey.toString();
+    const privateKey = input.privateKey || defaultPrivateKey;
     if (!privateKey) return nullPrivateKeyError;
-    const signer = createKeyPairFromPrivateKey(privateKey);
-    
+    // Use the utility function to create a keypair from the private key
+    const keypair = await createKeyPairFromPrivateKey(privateKey);
     // Sign the transaction
-    transaction.sign(signer);
+    transaction.sign(keypair);
     
-    // Serialize the signed transaction
-    const serializedTransaction = transaction.serialize().toString('base64');
+    // Serialize the signed transaction using base58
+    const serializedTransaction = bs58.encode(transaction.serialize());
     
     return createSuccessResponse(`Transaction signed: ${serializedTransaction}`);
   } catch (error) {
@@ -181,8 +194,8 @@ export const signTransactionMessageHandler = async (input: SignTransactionInput)
 
 export const sendTransactionHandler = async (input: SendTransactionInput): Promise<ToolResultSchema<any>> => {
   try {
-    // Deserialize the signed transaction
-    const transactionBuffer = Buffer.from(input.signedTransaction, 'base64');
+    // Deserialize the signed transaction using base58
+    const transactionBuffer = Buffer.from(bs58.decode(input.signedTransaction));
     const transaction = Transaction.from(transactionBuffer);
 
     // Use provided RPC URL or fall back to current network's URL
@@ -227,8 +240,8 @@ export const generateKeyPairHandler = async (input: GenerateKeyPairInput): Promi
   try {
     // Generate a new keypair
     const signer = Keypair.generate();
-    // Extract the private key
-    const privateKey = Buffer.from(signer.secretKey.slice(0, 32)).toString('base64');
+    // Extract the private key and encode with base58
+    const privateKey = bs58.encode(Buffer.from(signer.secretKey.slice(0, 32)));
     // Return the public key and private key
     return createSuccessResponse(`
     Public key: ${signer.publicKey.toString()}
@@ -240,8 +253,8 @@ export const generateKeyPairHandler = async (input: GenerateKeyPairInput): Promi
 
 export const importPrivateKeyHandler = async (input: ImportPrivateKeyInput): Promise<ToolResultSchema<any>> => {
   try {
-    // Import the private key
-    const privateKeyBytes = Buffer.from(input.privateKey, 'base64');
+    // Import the private key using base58
+    const privateKeyBytes = bs58.decode(input.privateKey);
     const signer = await createKeyPairSignerFromPrivateKeyBytes(privateKeyBytes);
 
     // Return the public key
@@ -284,16 +297,5 @@ export const getCurrentNetworkHandler = async (): Promise<ToolResultSchema<any>>
     return createSuccessResponse(`Current network is ${network}.`);
   } catch (error) {
     return createErrorResponse(`Error getting current network: ${error instanceof Error ? error.message : String(error)}`);
-  }
-};
-
-export const setDefaultKeyPairHandler = async (input: ImportPrivateKeyInput): Promise<ToolResultSchema<any>> => {
-  try {
-    defaultKeypair = createKeyPairFromPrivateKey(input.privateKey);
-    defaultPublicKey = defaultKeypair.publicKey.toString();
-
-    return createSuccessResponse(`Successfully set default wallet with public key: ${defaultPublicKey}`);
-  } catch (error) {
-    return createErrorResponse(`Error setting default wallet: ${error instanceof Error ? error.message : String(error)}`);
   }
 };

@@ -11,7 +11,6 @@ import {
   checkTransactionHandler,
   switchNetworkHandler,
   getCurrentNetworkHandler,
-  setDefaultKeyPairHandler,
 } from "./handlers/wallet.js";
 
 export const tools = [
@@ -59,7 +58,7 @@ export const tools = [
       properties: {
         fromPublicKey: { type: "string" },
         toPublicKey: { type: "string" },
-        amount: { type: "number" },
+        amount: { type: "number", description: "The amount of SOL to transfer, in Lamports (1 SOL = 1_000_000_000 Lamports)" },
         commitment: { type: "string", enum: ["confirmed", "finalized", "processed"] }
       },
       required: ["toPublicKey", "amount"]
@@ -71,8 +70,8 @@ export const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        transaction: { type: "string" },
-        privateKey: { type: "string" }
+        transaction: { type: "string", description: "Base58 encoded transaction message" },
+        privateKey: { type: "string", description: "Base58 encoded private key" }
       },
       required: ["transaction"]
     }
@@ -83,7 +82,7 @@ export const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        signedTransaction: { type: "string" },
+        signedTransaction: { type: "string", description: "Base58 encoded signed transaction" },
         skipPreflight: { type: "boolean" },
         commitment: { type: "string", enum: ["confirmed", "finalized", "processed"] },
         rpcUrl: { type: "string", description: "The RPC URL to use for the transaction, if not provided, the current network will be used" }
@@ -105,7 +104,7 @@ export const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        privateKey: { type: "string" }
+        privateKey: { type: "string", description: "Base58 encoded private key" }
       },
       required: ["privateKey"]
     }
@@ -152,17 +151,6 @@ export const tools = [
       type: "object",
       properties: {}
     }
-  },
-  {
-    name: "wallet_set_default_key_pair",
-    description: "Set the default wallet",
-    inputSchema: {
-      type: "object",
-      properties: {
-        privateKey: { type: "string", description: "The private key to set as the default wallet" }
-      },
-      required: ["privateKey"]
-    }
   }
 ];
 
@@ -179,5 +167,4 @@ export const handlers: Record<string, (input: any) => Promise<any>> = {
   wallet_check_transaction: checkTransactionHandler,
   wallet_switch_network: switchNetworkHandler,
   wallet_get_current_network: getCurrentNetworkHandler,
-  wallet_set_default_key_pair: setDefaultKeyPairHandler
 };
