@@ -286,3 +286,14 @@ export const getCurrentNetworkHandler = async (): Promise<ToolResultSchema<any>>
     return createErrorResponse(`Error getting current network: ${error instanceof Error ? error.message : String(error)}`);
   }
 };
+
+export const setDefaultKeyPairHandler = async (input: ImportPrivateKeyInput): Promise<ToolResultSchema<any>> => {
+  try {
+    defaultKeypair = createKeyPairFromPrivateKey(input.privateKey);
+    defaultPublicKey = defaultKeypair.publicKey.toString();
+
+    return createSuccessResponse(`Successfully set default wallet with public key: ${defaultPublicKey}`);
+  } catch (error) {
+    return createErrorResponse(`Error setting default wallet: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};

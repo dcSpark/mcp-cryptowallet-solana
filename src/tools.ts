@@ -10,7 +10,8 @@ import {
   validateAddressHandler,
   checkTransactionHandler,
   switchNetworkHandler,
-  getCurrentNetworkHandler
+  getCurrentNetworkHandler,
+  setDefaultKeyPairHandler,
 } from "./handlers/wallet.js";
 
 export const tools = [
@@ -151,6 +152,17 @@ export const tools = [
       type: "object",
       properties: {}
     }
+  },
+  {
+    name: "wallet_set_default_key_pair",
+    description: "Set the default wallet",
+    inputSchema: {
+      type: "object",
+      properties: {
+        privateKey: { type: "string", description: "The private key to set as the default wallet" }
+      },
+      required: ["privateKey"]
+    }
   }
 ];
 
@@ -166,5 +178,6 @@ export const handlers: Record<string, (input: any) => Promise<any>> = {
   wallet_validate_address: validateAddressHandler,
   wallet_check_transaction: checkTransactionHandler,
   wallet_switch_network: switchNetworkHandler,
-  wallet_get_current_network: getCurrentNetworkHandler
+  wallet_get_current_network: getCurrentNetworkHandler,
+  wallet_set_default_key_pair: setDefaultKeyPairHandler
 };
