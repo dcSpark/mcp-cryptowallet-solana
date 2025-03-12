@@ -1,0 +1,8 @@
+.eslintrc
+tests
+.gitignore
+.git
+.DS_Store
+.vscode
+.env
+.env.*

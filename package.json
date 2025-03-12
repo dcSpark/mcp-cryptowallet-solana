@@ -1,6 +1,6 @@
 {
   "name": "@mcp-dockmaster/mcp-cryptowallet-solana",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A Model Context Protocol server for Solana crypto wallet using @solana/kit",
   "license": "MIT",
   "author": "dcSpark <hello@dcspark.io>",
@@ -20,6 +20,7 @@
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
+    "start": "node build/index.js",
     "watch": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "test": "npm run build && TEST_MODE=true node --test tests/*.test.js"
