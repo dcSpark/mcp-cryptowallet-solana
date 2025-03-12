@@ -8,32 +8,34 @@ import {
   generateKeyPairHandler, 
   importPrivateKeyHandler, 
   validateAddressHandler,
-  checkTransactionHandler
+  checkTransactionHandler,
+  switchNetworkHandler,
+  getCurrentNetworkHandler
 } from "./handlers/wallet.js";
 
 export const tools = [
   {
     name: "wallet_get_balance",
-    description: "Get the balance of a Solana address",
+    description: "Get the balance of a Solana address (uses default wallet if no publicKey provided)",
     inputSchema: {
       type: "object",
       properties: {
         publicKey: { type: "string" },
         commitment: { type: "string", enum: ["confirmed", "finalized", "processed"] }
       },
-      required: ["publicKey"]
+      required: []
     }
   },
   {
     name: "wallet_get_token_accounts",
-    description: "Get the token accounts owned by a Solana address",
+    description: "Get the token accounts owned by a Solana address (uses default wallet if no publicKey provided)",
     inputSchema: {
       type: "object",
       properties: {
         publicKey: { type: "string" },
         commitment: { type: "string", enum: ["confirmed", "finalized", "processed"] }
       },
-      required: ["publicKey"]
+      required: []
     }
   },
   {
@@ -50,7 +52,7 @@ export const tools = [
   },
   {
     name: "wallet_create_transaction",
-    description: "Create a transaction to transfer SOL",
+    description: "Create a transaction to transfer SOL (uses default wallet if no fromPublicKey provided)",
     inputSchema: {
       type: "object",
       properties: {
@@ -59,19 +61,19 @@ export const tools = [
         amount: { type: "number" },
         commitment: { type: "string", enum: ["confirmed", "finalized", "processed"] }
       },
-      required: ["fromPublicKey", "toPublicKey", "amount"]
+      required: ["toPublicKey", "amount"]
     }
   },
   {
     name: "wallet_sign_transaction",
-    description: "Sign a transaction with a private key",
+    description: "Sign a transaction with a private key (uses default wallet if no privateKey provided)",
     inputSchema: {
       type: "object",
       properties: {
         transaction: { type: "string" },
         privateKey: { type: "string" }
       },
-      required: ["transaction", "privateKey"]
+      required: ["transaction"]
     }
   },
   {
@@ -82,7 +84,8 @@ export const tools = [
       properties: {
         signedTransaction: { type: "string" },
         skipPreflight: { type: "boolean" },
-        commitment: { type: "string", enum: ["confirmed", "finalized", "processed"] }
+        commitment: { type: "string", enum: ["confirmed", "finalized", "processed"] },
+        rpcUrl: { type: "string", description: "The RPC URL to use for the transaction, if not provided, the current network will be used" }
       },
       required: ["signedTransaction"]
     }
@@ -124,10 +127,29 @@ export const tools = [
       type: "object",
       properties: {
         signature: { type: "string" },
-        rpcUrl: { type: "string" },
+        rpcUrl: { type: "string", description: "The RPC URL to use for the transaction, if not provided, the current network will be used" },
         commitment: { type: "string", enum: ["confirmed", "finalized"] }
       },
       required: ["signature"]
+    }
+  },
+  {
+    name: "wallet_switch_network",
+    description: "Switch between Solana networks (devnet or mainnet)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        network: { type: "string", enum: ["devnet", "mainnet"] }
+      },
+      required: ["network"]
+    }
+  },
+  {
+    name: "wallet_get_current_network",
+    description: "Get the currently active Solana network",
+    inputSchema: {
+      type: "object",
+      properties: {}
     }
   }
 ];
@@ -142,5 +164,7 @@ export const handlers: Record<string, (input: any) => Promise<any>> = {
   wallet_generate_keypair: generateKeyPairHandler,
   wallet_import_private_key: importPrivateKeyHandler,
   wallet_validate_address: validateAddressHandler,
-  wallet_check_transaction: checkTransactionHandler
+  wallet_check_transaction: checkTransactionHandler,
+  wallet_switch_network: switchNetworkHandler,
+  wallet_get_current_network: getCurrentNetworkHandler
 };

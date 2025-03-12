@@ -2,12 +2,12 @@
 export type Commitment = 'processed' | 'confirmed' | 'finalized';
 
 export interface GetBalanceInput {
-  publicKey: string;
+  publicKey?: string;
   commitment?: Commitment;
 }
 
 export interface GetTokenAccountsInput {
-  publicKey: string;
+  publicKey?: string;
   commitment?: Commitment;
 }
 
@@ -17,17 +17,17 @@ export interface GetTokenBalanceInput {
 }
 
 export interface CreateTransactionInput {
-  fromPublicKey: string;
+  fromPublicKey?: string;
   toPublicKey: string;
   amount: number;
-  privateKey: string;
+  privateKey?: string;
   commitment?: Commitment;
   skipPreflight?: boolean;
 }
 
 export interface SignTransactionInput {
   transaction: string;
-  privateKey: string;
+  privateKey?: string;
 }
 
 export interface SendTransactionInput {

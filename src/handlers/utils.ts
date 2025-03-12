@@ -1,6 +1,7 @@
 // Import from @solana/kit instead of using mocks
 import { address, Address } from "@solana/kit";
 import { ToolResultSchema } from "../types.js";
+import { Keypair } from "@solana/web3.js";
 
 /**
  * Utility function to handle address creation and error handling
@@ -58,4 +59,14 @@ export const validateAddress = <T>(addressString: string): Address<string> | Too
     return createErrorResponse<T>(error);
   }
   return addr!;
+};
+
+/**
+ * Utility function to create a keypair from a private key string
+ * @param privateKeyString The private key as a base64 string
+ * @returns A Keypair instance
+ */
+export const createKeyPairFromPrivateKey = (privateKeyString: string): Keypair => {
+  const privateKeyBytes = Buffer.from(privateKeyString, 'base64');
+  return Keypair.fromSecretKey(privateKeyBytes);
 };
