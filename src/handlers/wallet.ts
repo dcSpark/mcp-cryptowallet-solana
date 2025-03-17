@@ -18,8 +18,6 @@ import {
   address,
   createKeyPairSignerFromPrivateKeyBytes,
   createSolanaRpc,
-  createSolanaRpcSubscriptions,
-  KeyPairSigner,
 } from "@solana/kit";
 
 import { Connection, Keypair, Message, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
@@ -70,7 +68,7 @@ if (process.env.PRIVATE_KEY) {
 const nullPublicKeyError = createErrorResponse('No public key provided and no default wallet configured. Set up the PRIVATE_KEY environment variable to use the default wallet.');
 const nullPrivateKeyError = createErrorResponse('No private key provided and no default wallet configured. Set up the PRIVATE_KEY environment variable to use the default wallet.');
 
-export const getBalanceHandler = async (input: GetBalanceInput): Promise<ToolResultSchema<any>> => {
+export const getBalanceHandler = async (input: GetBalanceInput): Promise<ToolResultSchema> => {
   try {
     // Validate the public key is a valid format
     const publicKey = input.publicKey || defaultPublicKey;
@@ -90,7 +88,7 @@ export const getBalanceHandler = async (input: GetBalanceInput): Promise<ToolRes
   }
 };
 
-export const getTokenAccountsHandler = async (input: GetTokenAccountsInput): Promise<ToolResultSchema<any>> => {
+export const getTokenAccountsHandler = async (input: GetTokenAccountsInput): Promise<ToolResultSchema> => {
   try {
     // Validate the public key is a valid format
     const publicKey = input.publicKey || defaultPublicKey;
@@ -108,7 +106,7 @@ export const getTokenAccountsHandler = async (input: GetTokenAccountsInput): Pro
   }
 };
 
-export const getTokenBalanceHandler = async (input: GetTokenBalanceInput): Promise<ToolResultSchema<any>> => {
+export const getTokenBalanceHandler = async (input: GetTokenBalanceInput): Promise<ToolResultSchema> => {
   try {
     // Validate the token account address is a valid format
     const tokenAccountAddr = validateAddress(input.tokenAccountAddress);
@@ -126,7 +124,7 @@ export const getTokenBalanceHandler = async (input: GetTokenBalanceInput): Promi
   }
 };
 
-export const createTransactionMessageHandler = async (input: CreateTransactionInput): Promise<ToolResultSchema<any>> => {
+export const createTransactionMessageHandler = async (input: CreateTransactionInput): Promise<ToolResultSchema> => {
   try {
     if (!BigInt(input.amount)) {
       return createErrorResponse('Invalid amount. Amount must be an integer number representing the amount of lamports to transfer.');
@@ -166,7 +164,7 @@ export const createTransactionMessageHandler = async (input: CreateTransactionIn
   }
 };
 
-export const signTransactionMessageHandler = async (input: SignTransactionInput): Promise<ToolResultSchema<any>> => {
+export const signTransactionMessageHandler = async (input: SignTransactionInput): Promise<ToolResultSchema> => {
   try {
     // Deserialize the message using base58 instead of base64
     const messageBuffer = Buffer.from(bs58.decode(input.transaction));
@@ -192,7 +190,7 @@ export const signTransactionMessageHandler = async (input: SignTransactionInput)
   }
 };
 
-export const sendTransactionHandler = async (input: SendTransactionInput): Promise<ToolResultSchema<any>> => {
+export const sendTransactionHandler = async (input: SendTransactionInput): Promise<ToolResultSchema> => {
   try {
     // Deserialize the signed transaction using base58
     const transactionBuffer = Buffer.from(bs58.decode(input.signedTransaction));
@@ -213,7 +211,7 @@ export const sendTransactionHandler = async (input: SendTransactionInput): Promi
   }
 };
 
-export const checkTransactionHandler = async (input: CheckTransactionInput): Promise<ToolResultSchema<any>> => {
+export const checkTransactionHandler = async (input: CheckTransactionInput): Promise<ToolResultSchema> => {
   try {
     const rpcUrl = input.rpcUrl || RPC_URLS[currentNetwork];
     const connection = new Connection(rpcUrl, 'confirmed');
@@ -236,7 +234,7 @@ export const checkTransactionHandler = async (input: CheckTransactionInput): Pro
   }
 };
 
-export const generateKeyPairHandler = async (input: GenerateKeyPairInput): Promise<ToolResultSchema<any>> => {
+export const generateKeyPairHandler = async (input: GenerateKeyPairInput): Promise<ToolResultSchema> => {
   try {
     // Generate a new keypair
     const signer = Keypair.generate();
@@ -251,7 +249,7 @@ export const generateKeyPairHandler = async (input: GenerateKeyPairInput): Promi
   }
 };
 
-export const importPrivateKeyHandler = async (input: ImportPrivateKeyInput): Promise<ToolResultSchema<any>> => {
+export const importPrivateKeyHandler = async (input: ImportPrivateKeyInput): Promise<ToolResultSchema> => {
   try {
     // Import the private key using base58
     const privateKeyBytes = bs58.decode(input.privateKey);
@@ -264,7 +262,7 @@ export const importPrivateKeyHandler = async (input: ImportPrivateKeyInput): Pro
   }
 };
 
-export const validateAddressHandler = async (input: ValidateAddressInput): Promise<ToolResultSchema<any>> => {
+export const validateAddressHandler = async (input: ValidateAddressInput): Promise<ToolResultSchema> => {
   try {
     // Validate the address is a valid format
     const addressResult = validateAddress(input.address);
@@ -278,7 +276,7 @@ export const validateAddressHandler = async (input: ValidateAddressInput): Promi
   }
 };
 
-export const switchNetworkHandler = async (input: { network: 'devnet' | 'mainnet' }): Promise<ToolResultSchema<any>> => {
+export const switchNetworkHandler = async (input: { network: 'devnet' | 'mainnet' }): Promise<ToolResultSchema> => {
   try {
     if (input.network !== 'devnet' && input.network !== 'mainnet') {
       return createErrorResponse('Invalid network. Must be "devnet" or "mainnet".');
@@ -291,7 +289,7 @@ export const switchNetworkHandler = async (input: { network: 'devnet' | 'mainnet
   }
 };
 
-export const getCurrentNetworkHandler = async (): Promise<ToolResultSchema<any>> => {
+export const getCurrentNetworkHandler = async (): Promise<ToolResultSchema> => {
   try {
     const network = getCurrentNetwork();
     return createSuccessResponse(`Current network is ${network}.`);

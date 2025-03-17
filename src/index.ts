@@ -4,9 +4,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
-  ErrorCode,
   ListToolsRequestSchema,
-  McpError,
 } from "@modelcontextprotocol/sdk/types.js";
 import { handlers, tools } from "./tools.js";
 

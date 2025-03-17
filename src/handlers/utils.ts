@@ -24,7 +24,7 @@ export const createAddress = (addressString: string): { addr?: Address<string>; 
  * @param message The error message
  * @returns A ToolResultSchema with the error message
  */
-export const createErrorResponse = <T>(message: string): ToolResultSchema<T> => {
+export const createErrorResponse = (message: string): ToolResultSchema => {
   return {
     content: [{
       type: "text",
@@ -39,7 +39,7 @@ export const createErrorResponse = <T>(message: string): ToolResultSchema<T> => 
  * @param message The success message
  * @returns A ToolResultSchema with the success message
  */
-export const createSuccessResponse = <T>(message: string): ToolResultSchema<T> => {
+export const createSuccessResponse = (message: string): ToolResultSchema => {
   return {
     content: [{
       type: "text",
@@ -54,10 +54,10 @@ export const createSuccessResponse = <T>(message: string): ToolResultSchema<T> =
  * @param addressString The address string to validate
  * @returns Either an address or a ToolResultSchema with an error message
  */
-export const validateAddress = <T>(addressString: string): Address<string> | ToolResultSchema<T> => {
+export const validateAddress = (addressString: string): Address<string> | ToolResultSchema => {
   const { addr, error } = createAddress(addressString);
   if (error) {
-    return createErrorResponse<T>(error);
+    return createErrorResponse(error);
   }
   return addr!;
 };

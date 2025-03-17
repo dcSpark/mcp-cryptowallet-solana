@@ -1,8 +1,7 @@
-export interface ToolResultSchema<T> {
+export interface ToolResultSchema {
   content: Array<{
     type: string;
     text: string;
   }>;
   isError: boolean;
-  toolResult?: T;
 }
